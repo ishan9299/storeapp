@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<head>
+    <script
+        src="https://kit.fontawesome.com/fc020f06d1.js"
+        crossorigin="anonymous">
+    </script>
+
+    <h1>Transactions</h1>
+
+    <body>
+        <table>
+            <tr>
+                <th>Name</th>
+                <th>Quantity</th>
+            </tr>
+            {{range $index, $element := .Transactions}}
+            <tr>
+                <td>{{.Name}}</td>
+
+                <td>
+                    {{ $id := printf "quantity-count-%d" $index }}
+                    <button onclick="reduceQuantity('{{$id}}')">
+                        <i class="fa-solid fa-minus"></i>
+                    </button>
+                    <span id="quantity-count-{{$index}}">1</span>
+                    <button onclick="increaseQuantity('{{$id}}')">
+                        <i class="fa-solid fa-plus"></i>
+                    </button>
+                </td>
+            </tr>
+            {{end}}
+        </table>
+
+        <script>
+            function reduceQuantity(elementId) {
+                var spanElement = document.getElementById(elementId);
+                var currentQuantity = parseInt(spanElement.textContent);
+                if (currentQuantity > 1) {
+                    spanElement.textContent = (currentQuantity - 1).toString();
+                }
+            }
+
+            function increaseQuantity(elementId) {
+                var spanElement = document.getElementById(elementId);
+                var currentQuantity = parseInt(spanElement.textContent);
+                spanElement.textContent = (currentQuantity + 1).toString();
+            }
+        </script>
+
+    </body>
+</head>

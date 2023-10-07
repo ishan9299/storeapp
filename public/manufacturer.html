@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<head>
+    <script src="https://kit.fontawesome.com/fc020f06d1.js" crossorigin="anonymous">
+    </script>
+
+    <style>
+        .edit-manufac-section[data-visible="false"] {
+            display: none;
+        }
+
+        .add-manufac-section[data-visible="false"] {
+            display: none;
+        }
+    </style>
+
+</head>
+
+<body>
+    <h1>Manufacturers</h1>
+
+    <button class="add-button" onclick="addManufacturer()">Add</button>
+
+    <table>
+        <tr>
+            <th>Id</th>
+            <th>Name</th>
+            <th>Address</th>
+            <th>Edit</th>
+            <th>Delete</th>
+        </tr>
+        {{range .Manufacturers}}
+        <tr id="row-{{.Id}}">
+            <td>{{.Id}}</td>
+            <td>{{.Name}}</td>
+            <td>{{.Address}}</td>
+            <td>
+                <a href="#">
+                    <button class="edit-button" onclick="editRow('row-{{.Id}}')">
+                        <i class="fa-solid fa-pen-to-square"></i>
+                    </button>
+                </a>
+            </td>
+            <td>
+                <a href="/manufacdelete/?idvalue={{.Id}}">
+                    <button class="delete-button">
+                        <i class="fa-solid fa-trash"></i>
+                    </button>
+                </a>
+            </td>
+        </tr>
+        {{end}}
+    </table>
+
+    <div data-visible="false" class="edit-manufac-section">
+        <h4>Edit Entry</h4>
+        <form action="/manufacedit/" method="POST">
+            <label for="edit-id">Id:</label><br>
+            <input type="text" id="edit-id" name="edit-id" value="" readonly><br>
+            <label for="edit-name">Name:</label><br>
+            <input type="text" id="edit-name" name="edit-name"><br>
+            <label for="edit-address">Address:</label><br>
+            <input type="text" id="edit-address" name="edit-address"><br><br>
+            <input class="submit-button" type="submit" value="Submit">
+        </form>
+    </div>
+
+    <div data-visible="false" class="add-manufac-section">
+        <h4>Add Manufacturer</h4>
+        <form method="POST">
+            <label for="add-name">Name:</label><br>
+            <input type="text" id="add-name" name="add-name"><br>
+            <label for="add-address">Address:</label><br>
+            <input type="text" id="add-address" name="add-address"><br><br>
+            <input class="submit-button" type="submit" value="Submit">
+        </form>
+    </div>
+
+    <script>
+        const editManufacSec = document.querySelector(".edit-manufac-section");
+        const addManufacSec = document.querySelector(".add-manufac-section")
+
+        function editRow(rowId) {
+            let row = document.getElementById(rowId);
+            let cells = row.getElementsByTagName("td");
+
+            const visibility = editManufacSec.getAttribute("data-visible");
+            console.log(visibility);
+            if (visibility === "false") {
+                editManufacSec.setAttribute("data-visible", true);
+            }
+
+            document.getElementById("edit-id").setAttribute("value", cells[0].innerText);
+            document.getElementById("edit-name").value = cells[1].innerText;
+            document.getElementById("edit-address").value = cells[2].innerText;
+        }
+
+        function addManufacturer() {
+            const addButton = document.querySelector(".add-button");
+            const visibility = addManufacSec.getAttribute("data-visible");
+            if (visibility === "false") {
+                addManufacSec.setAttribute("data-visible", true);
+            }
+        }
+
+        function resetAddDataVisible() {
+            const submitButton = document.querySelector("submit-button");
+            submitButton.addEventListener("click", () => {
+                const visibility = addManufacSec.getAttribute("data-visible");
+                if (visibility === "true") {
+                    navbar.setAttribute("data-visible", false);
+                }
+            })
+        }
+
+        function resetEditDataVisible() {
+            const submitButton = document.querySelector("submit-button");
+            submitButton.addEventListener("click", () => {
+                const visibility = editManufacSec.getAttribute("data-visible");
+                if (visibility === "true") {
+                    navbar.setAttribute("data-visible", false);
+                }
+            })
+        }
+    </script>
+
+</body>
+</html>
