@@ -1,9 +1,7 @@
 <!DOCTYPE html>
 <head>
-    <script
-        src="https://kit.fontawesome.com/fc020f06d1.js"
-        crossorigin="anonymous">
-    </script>
+
+    {{template "cssBootstrap" .}}
 
     <h1>Transactions</h1>
 
@@ -31,6 +29,8 @@
             {{end}}
         </table>
 
+        {{template "fontawesomeBootstrap" .}}
+        {{template "jsBootstrap" .}}
         <script>
             function reduceQuantity(elementId) {
                 var spanElement = document.getElementById(elementId);

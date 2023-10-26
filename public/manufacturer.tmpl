@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        {{template "cssBootstrap" .}}
+    </head>
+
+    <body>
+
+        <nav class="navbar navbar-expand-lg navbar-light bg-light">
+            <div class="mx-5">
+                <a class="navbar-brand" href="#">Storeapp</a>
+                <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav">
+                        <li class="nav-item">
+                            <a class="nav-link" href="/manufacturer">Manufacturer</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/product">Products</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+
+        <h1 class="text-center">Manufacturers</h1>
+
+        <div class="table-responsive mx-5">
+            <a href="/manufacadd">
+                <button type="button" class="add-button btn btn-primary mb-2">Add</button>
+            </a>
+            <table class="table table-bordered table-hover">
+                <thead>
+                    <tr>
+                        <th scope="col">Id</th>
+                        <th scope="col">Name</th>
+                        <th scope="col">Address</th>
+                        <th scope="col">Edit</th>
+                        <th scope="col">Delete</th>
+                    </tr>
+                </thead>
+                <tbody class="table-group-divider">
+                    {{range .Manufacturers}}
+                    <tr id="row-{{.Id}}">
+                        <th scope="row">{{.Id}}</th>
+                        <td>{{.Name}}</td>
+                        <td>{{.Address}}</td>
+
+                        <td>
+                            <a
+                                class="link-underline-opacity-0"
+                                href="/manufacedit/?idvalue={{.Id}}">
+                                <button
+                                    type="button"
+                                    class="edit-button btn btn-light"
+                                    onclick="editRow('row-{{.Id}}')">
+                                    <i class="fa-solid fa-pen-to-square"></i>
+                                </button>
+                            </a>
+                        </td>
+
+                        <td>
+                            <a
+                                class="link-underline-opacity-0"
+                                href="/manufacdelete/?idvalue={{.Id}}">
+                                <button
+                                    type="button"
+                                    class="delete-button btn btn-light">
+                                    <i class="fa-solid fa-trash"></i>
+                                </button>
+                            </a>
+                        </td>
+                    </tr>
+                    {{end}}
+                </tbody>
+            </table>
+        </div>
+
+        {{template "fontawesomeBootstrap" .}}
+        {{template "jsBootstrap" .}}
+    </body>
+</html>

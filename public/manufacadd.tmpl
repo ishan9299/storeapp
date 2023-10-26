@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        {{template "cssBootstrap" .}}
+    </head>
+
+    <body>
+
+        <div class="container-md">
+            <h1>Add Manufacturer</h1>
+            <form method="POST">
+                <div class="form-group">
+                    <label for="add-name">Name:</label><br>
+                    <input type="text" id="add-name" name="add-name"><br>
+                </div>
+                <div class="form-group">
+                    <label for="add-address">Address:</label><br>
+                    <input type="text" id="add-address" name="add-address"><br><br>
+                </div>
+                <button type="submit" class="btn btn-primary">Submit</button>
+                <a href="/manufacturer"><button class="btn btn-secondary">Cancel</button></a>
+            </form>
+        </div>
+
+        {{template "fontawesomeBootstrap" .}}
+        {{template "jsBootstrap" .}}
+    </body>
+</html>

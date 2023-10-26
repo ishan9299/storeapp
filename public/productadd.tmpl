@@ -1,0 +1,34 @@
+<html>
+    <head>
+        {{template "cssBootstrap" .}}
+    </head>
+
+    <body>
+
+        <div class="container-md">
+            <h1>Add Manufacturer</h1>
+            <form action="/productadd/" method="POST">
+                <div class="form-group">
+                    <label for="add-name">Name:</label><br>
+                    <input type="text" id="add-name" name="add-name"><br>
+                </div>
+                <div class="form-group">
+                    <label for="add-quantity">Quantity:</label><br>
+                    <input type="text" id="add-quantity" name="add-quantity"><br>
+                </div>
+                <div class="form-group">
+                    <label for="add-manufacturer-header">Manufacturer:</label><br>
+                    {{range .Manufacturers}}
+                    <input type="radio" id="{{.Name}}-radio" name="add-manufacturer" value="{{.Name}}">
+                    <label for="{{.Name}}-radio">{{.Name}}</label><br>
+                    {{end}}
+                </div>
+                <button type="submit" class="btn btn-primary">Submit</button>
+                <a href="/product"><button class="btn btn-secondary">Cancel</button></a>
+            </form>
+        </div>
+
+        {{template "fontawesomeBootstrap" .}}
+        {{template "jsBootstrap" .}}
+    </body>
+</html>

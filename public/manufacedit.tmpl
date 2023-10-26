@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        {{template "cssBootstrap" .}}
+    </head>
+
+    <body>
+
+        <div class="container-md">
+            <h1 class="text-center">Edit Entry</h1>
+
+            <form action="/manufacedit/" method="POST">
+                <div class="form-group">
+                    <label for="edit-id">Id:</label><br>
+                    <input type="text" class="form-control" id="edit-id" name="edit-id" value="{{.Id}}" readonly><br>
+                </div>
+                <div class="form-group">
+                    <label for="edit-name">Name:</label><br>
+                    <input type="text" class="form-control" id="edit-name" name="edit-name" value="{{.Name}}"><br>
+                </div>
+                <div class="form-group">
+                    <label for="edit-address">Address:</label><br>
+                    <input type="text" class="form-control" id="edit-address" name="edit-address" value="{{.Address}}"><br><br>
+                </div>
+                <button type="submit" class="btn btn-primary">Submit</button>
+                <a href="/manufacturer"><button class="btn btn-secondary">Cancel</button></a>
+
+            </form>
+        </div>
+
+        {{template "fontawesomeBootstrap" .}}
+        {{template "jsBootstrap" .}}
+    </body>
+</html>

@@ -73,8 +73,9 @@ func main() {
     PORT := ":8080"
 
     http.HandleFunc("/manufacturer", ManufacturerHandler)
-    http.HandleFunc("/manufacdelete/", ManufacturerDeletionHandler)
+    http.HandleFunc("/manufacadd/", ManufacturerAddHandler)
     http.HandleFunc("/manufacedit/", ManufacturerEditHandler)
+    http.HandleFunc("/manufacdelete/", ManufacturerDeletionHandler)
     http.HandleFunc("/product", ProductHandler)
     http.HandleFunc("/productdelete/", ProductDeleteHandler)
     http.HandleFunc("/productedit/", ProductEditHandler)
@@ -86,7 +87,7 @@ func main() {
 
 func ManufacturerHandler(w http.ResponseWriter, r *http.Request) {
     var manufacturers []Manufacturer
-    tmpl, _ = template.ParseFiles("./public/manufacturer.html")
+    tmpl, _ = template.ParseFiles("./public/manufacturer.tmpl", "./public/bootstrap.tmpl")
 
     if r.Method == "GET" {
 
@@ -95,17 +96,6 @@ func ManufacturerHandler(w http.ResponseWriter, r *http.Request) {
         context = ManufacturerPageData{Manufacturers: manufacturers}
         tmpl.Execute(w, context)
 
-    } else if r.Method == "POST" {
-        r.ParseForm()
-        Name := r.FormValue("add-name")
-        Address := r.FormValue("add-address")
-
-        err = AddManufacturer(Name, Address)
-        if err != nil {
-            log.Fatal("Error adding task")
-        }
-        http.Redirect(w, r, "/manufacturer", http.StatusFound)
-        tmpl.Execute(w, context)
     }
 }
 
@@ -144,6 +134,46 @@ func sqlGetManufacturer(manufacturers *[]Manufacturer) {
     }
 }
 
+func ManufacturerEditHandler(w http.ResponseWriter, r *http.Request) {
+    if r.Method == "GET" {
+        var m Manufacturer
+        r.ParseForm()
+        id := r.FormValue("idvalue")
+
+        getManufacturer := "select * from manufacturer where id=?"
+
+        row := db.QueryRow(getManufacturer, id)
+
+        err = row.Scan(&m.Id, &m.Name, &m.Address)
+        if err != nil {
+            log.Fatal(err)
+        }
+
+        manufacEditTmpl, err := template.ParseFiles("./public/manufacedit.tmpl", "./public/bootstrap.tmpl")
+        if err != nil {
+            log.Fatal(err)
+        }
+
+        manufacEditTmpl.Execute(w, m)
+    } else if r.Method == "POST" {
+        r.ParseForm()
+        Id := r.FormValue("edit-id")
+        Name := r.FormValue("edit-name")
+        Address := r.FormValue("edit-address")
+
+        stmt, err := db.Prepare(`update manufacturer set name=?, address=? where id=?;`)
+
+        _, err = stmt.Exec(Name, Address, Id)
+
+        if err != nil {
+            panic(err.Error())
+        }
+
+        http.Redirect(w, r, "/manufacturer", http.StatusFound)
+        tmpl.Execute(w, context)
+    }
+}
+
 func ManufacturerDeletionHandler(w http.ResponseWriter, r *http.Request) {
     r.ParseForm()
     id := r.FormValue("idvalue")
@@ -174,25 +204,25 @@ func ManufacturerDeletionHandler(w http.ResponseWriter, r *http.Request) {
     http.Redirect(w, r, "/manufacturer", http.StatusFound)
 }
 
-func ManufacturerEditHandler(w http.ResponseWriter, r *http.Request) {
-    r.ParseForm()
-    Id := r.FormValue("edit-id")
-    Name := r.FormValue("edit-name")
-    Address := r.FormValue("edit-address")
+func ManufacturerAddHandler(w http.ResponseWriter, r *http.Request) {
+    if r.Method == "POST" {
+        r.ParseForm()
+        name := r.FormValue("add-name")
+        manufacturer := r.FormValue("add-address")
 
-    // fmt.Println(Id, Name, Address)
+        if name != "" || manufacturer != "" {
+            AddManufacturer(name, manufacturer)
+        }
 
-    stmt, err := db.Prepare(`update manufacturer set name=?, address=? where id=?;`)
+        http.Redirect(w, r, "/manufacturer", http.StatusFound)
+    } else if r.Method == "GET" {
+        manufacAddTmpl, err := template.ParseFiles("./public/manufacadd.tmpl", "./public/bootstrap.tmpl")
+        if err != nil {
+            log.Fatal(err)
+        }
 
-    _, err = stmt.Exec(Name, Address, Id)
-
-
-    if err != nil {
-        panic(err.Error())
+        manufacAddTmpl.Execute(w, nil)
     }
-
-    http.Redirect(w, r, "/manufacturer", http.StatusFound)
-    tmpl.Execute(w, context)
 }
 
 func AddManufacturer(name, address string) error {
@@ -213,7 +243,7 @@ func AddManufacturer(name, address string) error {
 }
 
 func ProductHandler(w http.ResponseWriter, r *http.Request) {
-    productTmpl, err = template.ParseFiles("./public/products.html")
+    productTmpl, err = template.ParseFiles("./public/products.tmpl", "./public/bootstrap.tmpl")
     if err != nil {
         log.Fatal(err)
     }
@@ -224,17 +254,8 @@ func ProductHandler(w http.ResponseWriter, r *http.Request) {
         sqlGetManufacturer(&manufacturers)
         sqlGetProducts(&products)
 
-        fmt.Println("manufacNameIdPair: ", manufacNameIdPair)
         productContext = ProductPageData{Products: products, Manufacturers: manufacturers}
 
-        productTmpl.Execute(w, productContext)
-    } else if r.Method == "POST" {
-        r.ParseForm()
-        selectedManufac := r.Form["select-manufacturer"]
-        
-        fmt.Println(selectedManufac)
-
-        http.Redirect(w, r, "/product", http.StatusFound)
         productTmpl.Execute(w, productContext)
     }
 }
@@ -259,53 +280,98 @@ func ProductDeleteHandler(w http.ResponseWriter, r *http.Request) {
 
 func ProductEditHandler(w http.ResponseWriter, r *http.Request) {
     r.ParseForm()
+    Id := r.FormValue("idvalue")
+    var m Product
+    var products []Product
+    var manufacturers []Manufacturer
 
-    Id := r.FormValue("edit-id")
-    Name := r.FormValue("edit-name")
-    Quantity := r.FormValue("edit-quantity")
-    Manufacturer := r.FormValue("edit-manufacturer")
+    if r.Method == "GET" {
 
-    ManufacId := manufacNameIdPair[Manufacturer]
-    fmt.Println("Manufacturer: ", Manufacturer, "manufacNameIdPair: ", manufacNameIdPair)
+        productEditTmpl, err := template.ParseFiles("./public/productedit.tmpl", "./public/bootstrap.tmpl")
+        if err != nil {
+            log.Fatal(err)
+        }
 
-    stmt, err := db.Prepare(`update products set name=?, quantity=?, manufacid=? where id=?;`)
+        getProduct := "select * from products where id=?"
 
-    fmt.Println("Name: ", Name, "Quantity: ", Quantity, "ManufacId: ", ManufacId, "Id: ", Id)
+        row := db.QueryRow(getProduct, Id)
 
-    _, err = stmt.Exec(Name, Quantity, ManufacId, Id)
+        err = row.Scan(&m.Id, &m.Name, &m.Quantity, &m.ManufacName)
+        if err != nil {
+            log.Fatal(err)
+        }
+
+        products = append(products, m)
+        sqlGetManufacturer(&manufacturers)
+
+        productContext = ProductPageData{Products: products, Manufacturers: manufacturers}
+
+        productEditTmpl.Execute(w, productContext)
+
+    } else if r.Method == "POST" {
+        r.ParseForm()
+
+        Name := r.FormValue("edit-name")
+        Quantity := r.FormValue("edit-quantity")
+        Manufacturer := r.FormValue("edit-manufacturer")
+
+        ManufacId := manufacNameIdPair[Manufacturer]
+        fmt.Println("Manufacturer: ", Manufacturer, "manufacNameIdPair: ", manufacNameIdPair)
+
+        stmt, err := db.Prepare(`update products set name=?, quantity=?, manufacid=? where id=?;`)
+
+        fmt.Println("Name: ", Name, "Quantity: ", Quantity, "ManufacId: ", ManufacId, "Id: ", Id)
+
+        _, err = stmt.Exec(Name, Quantity, ManufacId, Id)
 
 
-    if err != nil {
-        panic(err.Error())
+        if err != nil {
+            panic(err.Error())
+        }
+
+        http.Redirect(w, r, "/product", http.StatusFound)
+        productTmpl.Execute(w, productContext)
     }
-
-    http.Redirect(w, r, "/product", http.StatusFound)
-    productTmpl.Execute(w, productContext)
 }
 
 func ProductAddHandler(w http.ResponseWriter, r *http.Request) {
-    r.ParseForm()
+    var manufacturers []Manufacturer
+    if r.Method == "GET" {
+        productAddTmpl, err := template.ParseFiles("./public/productadd.tmpl", "./public/bootstrap.tmpl")
+        if err != nil {
+            log.Fatal(err)
+        }
 
-    Name := r.FormValue("add-name")
-    Quantity := r.FormValue("add-quantity")
-    Manufacturer := r.FormValue("add-manufacturer")
+        sqlGetManufacturer(&manufacturers)
+        context = ManufacturerPageData{Manufacturers: manufacturers}
 
-    ManufacId := manufacNameIdPair[Manufacturer]
+        productAddTmpl.Execute(w, context)
+    } else if r.Method == "POST" {
+        r.ParseForm()
 
-    stmt, err := db.Prepare(`insert into products (name, quantity, manufacid) values(?, ?, ?);`)
+        Name := r.FormValue("add-name")
+        Quantity := r.FormValue("add-quantity")
+        Manufacturer := r.FormValue("add-manufacturer")
 
-    if err != nil {
-        panic(err.Error())
+        ManufacId := manufacNameIdPair[Manufacturer]
+
+        stmt, err := db.Prepare(`insert into products (name, quantity, manufacid) values(?, ?, ?);`)
+
+        if err != nil {
+            panic(err.Error())
+        }
+
+        if Name != "" || Quantity != "" || Manufacturer != "" {
+            _, err = stmt.Exec(Name, Quantity, ManufacId)
+            if err != nil {
+                panic(err.Error())
+            }
+        }
+
+
+        http.Redirect(w, r, "/product", http.StatusFound)
+        productTmpl.Execute(w, productContext)
     }
-
-    _, err = stmt.Exec(Name, Quantity, ManufacId)
-
-	if err != nil {
-		panic(err.Error())
-	}
-
-    http.Redirect(w, r, "/product", http.StatusFound)
-    productTmpl.Execute(w, productContext)
 }
 
 func sqlGetProducts(products *[]Product) {
@@ -391,7 +457,7 @@ func sqlGetSelectedProducts(products *[]Product, names []string) {
 
 func TransactionHandler(w http.ResponseWriter, r *http.Request) {
     var transactions []Transaction
-    transactionTmpl, _ = template.ParseFiles("./public/transactions.html")
+    transactionTmpl, _ = template.ParseFiles("./public/transactions.tmpl", "./public/bootstrap.tmpl")
 
     r.ParseForm()
     names := r.FormValue("names")

@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<head>
+
+    {{template "cssBootstrap" .}}
+
+    <body>
+
+        <nav class="navbar navbar-expand-lg navbar-light bg-light">
+            <div class="mx-5">
+                <a class="navbar-brand" href="#">Storeapp</a>
+                <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav">
+                        <li class="nav-item">
+                            <a class="nav-link" href="/manufacturer">Manufacturer</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/product">Products</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+
+        <h1 class="text-center">Products</h1>
+
+        <div class="table-responsive mx-5">
+            <a href="/productadd">
+                <button type="button" class="add-button btn btn-primary mb-2">
+                    Add
+                </button>
+            </a>
+
+            <table class="table table-bordered table-hover">
+                <thead>
+                    <tr>
+                        <th>Id</th>
+                        <th>Name</th>
+                        <th>Quantity</th>
+                        <th>Manufacturer</th>
+                        <th>Edit</th>
+                        <th>Delete</th>
+                        <th>Add to Cart</th>
+                    </tr>
+                </thead>
+                <tbody class="table-group-divider">
+                    {{range .Products}}
+                    <tr id="row-{{.Id}}">
+                        <td>{{.Id}}</td>
+                        <td>{{.Name}}</td>
+                        <td>
+                            {{.Quantity}}
+                        </td>
+                        <td>{{.ManufacName}}</td>
+                        <td>
+                            <a href="/productedit/?idvalue={{.Id}}">
+                                <button class="edit-button btn btn-light">
+                                    <i class="fa-solid fa-pen-to-square"></i>
+                                </button>
+                            </a>
+                        </td>
+                        <td>
+                            <a href="/productdelete/?idvalue={{.Id}}">
+                                <button
+                                    class="delete-button btn btn-light">
+                                    <i class="fa-solid fa-trash"></i>
+                                </button>
+                            </a>
+                        </td>
+                        <td>
+                            <button
+                                class="add-to-cart-button btn btn-light"
+                                onclick="addToCart({{.Name}})">
+                                <i class="fa-solid fa-cart-shopping"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    {{end}}
+                </tbody>
+            </table>
+
+            <div class="cart-section">
+                <h4>Cart:</h4>
+                <div class="cart-form">
+                    <div id="cart-items">
+                        <div class="cart-items-desc">
+                        </div>
+                    </div>
+                </div>
+                <button class="btn btn-primary mb-2" id="checkout-button">
+                    Checkout
+                </button>
+            </div>
+        </div>
+
+
+        {{template "fontawesomeBootstrap" .}}
+        {{template "jsBootstrap" .}}
+
+        <script>
+            const cartSec = document.querySelector(".cart-section");
+
+            let url;
+
+            let productsInCart = [];
+
+            function addToCart(name, quantity) {
+                if (!productsInCart.includes(name)) {
+                    productsInCart.push(name);
+                    let cartItem = createCartItem(name, quantity);
+
+                    let cartItems = document.getElementById("cart-items");
+                    cartItems.appendChild(cartItem);
+                }
+            }
+
+            function createCartItem(name, quantity) {
+                var cartItemDesc = document.createElement("div");
+                cartItemDesc.classList.add("cart-items-desc");
+
+                var cartItemName = document.createElement("div");
+                cartItemName.classList.add("cart-item-name");
+                cartItemName.textContent = name;
+
+                var cartItemQuantity = document.createElement("div");
+                cartItemQuantity.classList.add("cart-item-quantity");
+                cartItemQuantity.textContent = quantity;
+
+                cartItemDesc.appendChild(cartItemName);
+                cartItemDesc.appendChild(cartItemQuantity);
+
+                return cartItemDesc;
+            }
+
+
+
+            document.getElementById("checkout-button").addEventListener("click", function() {
+                let productNames = productsInCart.toString();
+                window.location.href = `http://localhost:8080/transactions?names=${productNames}`;
+            });
+        </script>
+
+    </body>
+</head>
